@@ -107,3 +107,16 @@ def get_server_history(server_id: str, limit: int = 10, db: Session = Depends(ge
     if not records:
         raise HTTPException(status_code=404, detail=f"No se encontraron registros para el servidor '{server_id}'.")
     return records
+
+from src.services.cloud_exporter import CloudDataLakeExporter
+
+exporter = CloudDataLakeExporter()
+
+@app.post("/api/v1/cloud/export-datalake", tags=["Cloud Data Lake"])
+def trigger_datalake_export(limit: int = 50, db: Session = Depends(get_db)):
+    """
+    Empaqueta los registros de telemetria acumulados en SQL y los exporta
+    al Data Lake con particionamiento temporal (year/month/day).
+    """
+    result = exporter.export_batch_from_db(db=db, limit=limit)
+    return result

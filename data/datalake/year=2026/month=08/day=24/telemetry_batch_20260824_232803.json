@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "server_id": "SRV-XEON-01",
+    "cpu_utilization_pct": 45.5,
+    "package_temp_c": 58.2,
+    "dram_usage_gb": 32.0,
+    "pcie_error_count": 0,
+    "status": "NORMAL",
+    "is_healthy": true,
+    "anomaly_score": 0.2359,
+    "recorded_at": "2026-08-20T23:49:17.368208"
+  }
+]
