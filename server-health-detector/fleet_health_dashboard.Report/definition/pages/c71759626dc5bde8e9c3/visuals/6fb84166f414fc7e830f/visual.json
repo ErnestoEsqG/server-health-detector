@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "6fb84166f414fc7e830f",
+  "position": {
+    "x": 969.97826940699042,
+    "y": 76.00575991621939,
+    "z": 5,
+    "height": 149.59863856525723,
+    "width": 296.78439586333286,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "server_id"
+                }
+              },
+              "queryRef": "fleet_server_kpis.server_id",
+              "nativeQueryRef": "server_id"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

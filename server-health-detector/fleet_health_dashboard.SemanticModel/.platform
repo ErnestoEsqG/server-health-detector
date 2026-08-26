@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "fleet_health_dashboard"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "4276b900-3d8f-4a4f-971b-eb82818ebc50"
+  }
+}

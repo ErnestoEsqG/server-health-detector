@@ -1,0 +1,170 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "78320ab4af468fe76008",
+  "position": {
+    "x": 639.41353580311556,
+    "y": 430.6993061919099,
+    "z": 7,
+    "height": 289.54575206178816,
+    "width": 640.61997643670634,
+    "tabOrder": 7
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_master_telemetry"
+                    }
+                  },
+                  "Property": "recorded_at"
+                }
+              },
+              "queryRef": "fleet_master_telemetry.recorded_at",
+              "nativeQueryRef": "recorded_at",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fleet_master_telemetry"
+                        }
+                      },
+                      "Property": "package_temp_c"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Sum(fleet_master_telemetry.package_temp_c)",
+              "nativeQueryRef": "Average of package_temp_c"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fleet_master_telemetry"
+                        }
+                      },
+                      "Property": "cpu_utilization_pct"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Sum(fleet_master_telemetry.cpu_utilization_pct)",
+              "nativeQueryRef": "Average of cpu_utilization_pct"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fleet_master_telemetry"
+                  }
+                },
+                "Property": "recorded_at"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "dataPoint": [
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 2,
+                      "Percent": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Sum(fleet_master_telemetry.cpu_utilization_pct)"
+          }
+        },
+        {
+          "properties": {
+            "fill": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 4,
+                      "Percent": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Sum(fleet_master_telemetry.package_temp_c)"
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Fleet Telemetry Trends Over Time'"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

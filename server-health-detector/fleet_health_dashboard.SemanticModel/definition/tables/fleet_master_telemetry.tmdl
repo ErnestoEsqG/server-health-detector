@@ -1,0 +1,170 @@
+table fleet_master_telemetry
+	lineageTag: 52028b8d-387e-49e0-a851-016083a4d2b9
+
+	measure 'Fleet Uptime %' = ```
+			
+			DIVIDE(
+			    CALCULATE(
+			        COUNTROWS(fleet_master_telemetry), 
+			        fleet_master_telemetry[status] = "NORMAL"
+			    ),
+			    COUNTROWS(fleet_master_telemetry),
+			    0
+			)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: f5c7bfbb-afd9-4fd4-84c3-a8177912c4ee
+
+	measure 'Total Incidentes' = ```
+			
+			CALCULATE(
+			    COUNTROWS(fleet_master_telemetry), 
+			    fleet_master_telemetry[status] <> "NORMAL"
+			)
+			```
+		formatString: 0
+		lineageTag: 523bebbe-1a62-49b2-bc70-dd56bf59c58a
+
+	measure 'Temp Promedio' = AVERAGE(fleet_master_telemetry[package_temp_c])
+		lineageTag: cd6c74a6-6e60-48b7-bf46-9fe1c17421b0
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'CPU Promedio' = AVERAGE(fleet_master_telemetry[cpu_utilization_pct])
+		lineageTag: 1cb0ada4-7bb2-4f74-a514-05772a15d091
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column record_id
+		dataType: int64
+		formatString: 0
+		lineageTag: b441cd86-7cfa-4dfb-b4e9-b80e2f770c01
+		summarizeBy: sum
+		sourceColumn: record_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column server_id
+		dataType: string
+		lineageTag: 47711148-5cd6-4e40-8806-9a17004fb7a9
+		summarizeBy: none
+		sourceColumn: server_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column hostname
+		dataType: string
+		lineageTag: 6b49006d-6035-4c10-a653-140ccd1c5d27
+		summarizeBy: none
+		sourceColumn: hostname
+
+		annotation SummarizationSetBy = Automatic
+
+	column rack_id
+		dataType: string
+		lineageTag: 1be379bb-e32a-4f63-8a6a-e2a034c835db
+		summarizeBy: none
+		sourceColumn: rack_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column processor_model
+		dataType: string
+		lineageTag: 626d5077-cbcb-40b4-b5b7-b7ed53345e92
+		summarizeBy: none
+		sourceColumn: processor_model
+
+		annotation SummarizationSetBy = Automatic
+
+	column cpu_utilization_pct
+		dataType: double
+		lineageTag: 659902a3-f6cf-4a7d-bf51-06807e0bfe39
+		summarizeBy: sum
+		sourceColumn: cpu_utilization_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column package_temp_c
+		dataType: double
+		lineageTag: f5d5df4c-532d-45ac-b304-146d51219a42
+		summarizeBy: sum
+		sourceColumn: package_temp_c
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column dram_usage_gb
+		dataType: double
+		lineageTag: 44dc99ab-98a1-438c-99b7-2ba5cb273066
+		summarizeBy: sum
+		sourceColumn: dram_usage_gb
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column pcie_error_count
+		dataType: int64
+		formatString: 0
+		lineageTag: ed072c50-0b82-43ed-96b9-b69cda869d61
+		summarizeBy: sum
+		sourceColumn: pcie_error_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: b75541af-ee38-4765-bead-997f3e32f714
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_healthy
+		dataType: int64
+		formatString: 0
+		lineageTag: bf9b45b1-8a93-4ff9-a155-be077bcb8345
+		summarizeBy: sum
+		sourceColumn: is_healthy
+
+		annotation SummarizationSetBy = Automatic
+
+	column anomaly_score
+		dataType: double
+		lineageTag: 6559d112-c6d1-4e97-bae5-f00885df09c0
+		summarizeBy: sum
+		sourceColumn: anomaly_score
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column recorded_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b3eaac2c-9566-4fe3-97a7-ed358015f12e
+		summarizeBy: none
+		sourceColumn: recorded_at
+
+		variation Variation
+			isDefault
+			relationship: 2c316d4e-50d3-4390-8d99-f69fd23bf2f2
+			defaultHierarchy: LocalDateTable_ee44704e-2b5b-4555-85c0-adc05dec7b8f.'Jerarquía de fechas'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fleet_master_telemetry = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Users\ERNES.000\OneDrive\Datos adjuntos\fleet_master_telemetry.csv"), [Delimiter = ",", Columns = 13, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"record_id", Int64.Type}, {"server_id", type text}, {"hostname", type text}, {"rack_id", type text}, {"processor_model", type text}, {"cpu_utilization_pct", type number}, {"package_temp_c", type number}, {"dram_usage_gb", type number}, {"pcie_error_count", Int64.Type}, {"status", type text}, {"is_healthy", Int64.Type}, {"anomaly_score", type number}, {"recorded_at", type datetime}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

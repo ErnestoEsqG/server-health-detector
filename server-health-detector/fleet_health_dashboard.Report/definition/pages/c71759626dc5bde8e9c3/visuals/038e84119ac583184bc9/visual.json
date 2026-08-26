@@ -1,0 +1,393 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "038e84119ac583184bc9",
+  "position": {
+    "x": 639.41353580311556,
+    "y": 225.60439848147661,
+    "z": 8,
+    "height": 205.09490771043329,
+    "width": 640.61997643670634,
+    "tabOrder": 8
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "server_id"
+                }
+              },
+              "queryRef": "fleet_server_kpis.server_id",
+              "nativeQueryRef": "server_id"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "rack_id"
+                }
+              },
+              "queryRef": "fleet_server_kpis.rack_id",
+              "nativeQueryRef": "rack_id"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "total_readings"
+                }
+              },
+              "queryRef": "fleet_server_kpis.total_readings",
+              "nativeQueryRef": "total_readings"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "uptime_pct"
+                }
+              },
+              "queryRef": "fleet_server_kpis.uptime_pct",
+              "nativeQueryRef": "uptime_pct"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "avg_temp_c"
+                }
+              },
+              "queryRef": "fleet_server_kpis.avg_temp_c",
+              "nativeQueryRef": "avg_temp_c"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "max_temp_c"
+                }
+              },
+              "queryRef": "fleet_server_kpis.max_temp_c",
+              "nativeQueryRef": "max_temp_c"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_server_kpis"
+                    }
+                  },
+                  "Property": "total_pcie_errors"
+                }
+              },
+              "queryRef": "fleet_server_kpis.total_pcie_errors",
+              "nativeQueryRef": "total_pcie_errors"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "columnFormatting": [
+        {
+          "properties": {
+            "dataBars": {
+              "positiveColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'maxColor'"
+                      }
+                    }
+                  }
+                }
+              },
+              "negativeColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'minColor'"
+                      }
+                    }
+                  }
+                }
+              },
+              "axisColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'foreground'"
+                      }
+                    }
+                  }
+                }
+              },
+              "reverseDirection": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "hideText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "totalMatchingOption": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1L"
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "fleet_server_kpis.uptime_pct"
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "FillRule": {
+                      "Input": {
+                        "Aggregation": {
+                          "Expression": {
+                            "Column": {
+                              "Expression": {
+                                "SourceRef": {
+                                  "Entity": "fleet_server_kpis"
+                                }
+                              },
+                              "Property": "uptime_pct"
+                            }
+                          },
+                          "Function": 5
+                        }
+                      },
+                      "FillRule": {
+                        "linearGradient2": {
+                          "min": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#D64550'"
+                              }
+                            }
+                          },
+                          "max": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#00FF4D'"
+                              }
+                            }
+                          },
+                          "nullColoringStrategy": {
+                            "strategy": {
+                              "Literal": {
+                                "Value": "'asZero'"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "fleet_server_kpis.uptime_pct"
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Detailed Node Health & PCIe Error Matrix'"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "alignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "537752477a9fcb5eba09",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fleet_server_kpis"
+              }
+            },
+            "Property": "server_id"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "e66d7f729c67d1a7733f",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fleet_server_kpis"
+              }
+            },
+            "Property": "rack_id"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "0fdb0aacdf97a6f85604",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fleet_server_kpis"
+              }
+            },
+            "Property": "total_readings"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "eab219a0672e939f1bc1",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fleet_server_kpis"
+              }
+            },
+            "Property": "uptime_pct"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "20058cbd3b5b5a1c0e21",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fleet_server_kpis"
+              }
+            },
+            "Property": "avg_temp_c"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "dfc62988d77fba9131ee",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fleet_server_kpis"
+              }
+            },
+            "Property": "max_temp_c"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "00ec75be51c233be4d81",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fleet_server_kpis"
+              }
+            },
+            "Property": "total_pcie_errors"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

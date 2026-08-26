@@ -1,0 +1,22 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-MX
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["fleet_server_kpis","fleet_master_telemetry"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table fleet_server_kpis
+ref table fleet_master_telemetry
+ref table DateTableTemplate_34974c45-8a52-4238-9844-f83a3215c3a6
+ref table LocalDateTable_ee44704e-2b5b-4555-85c0-adc05dec7b8f
+
+ref cultureInfo es-ES
+

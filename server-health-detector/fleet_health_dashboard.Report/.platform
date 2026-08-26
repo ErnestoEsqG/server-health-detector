@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "fleet_health_dashboard"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "0804bc22-937f-436c-a5de-cb4a5943028e"
+  }
+}

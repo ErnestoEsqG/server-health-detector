@@ -1,0 +1,107 @@
+table fleet_server_kpis
+	lineageTag: 9eda8d72-e261-4251-96b3-94c47d5e1329
+
+	column server_id
+		dataType: string
+		lineageTag: 71998596-032b-4b36-957f-77500343da7d
+		summarizeBy: none
+		sourceColumn: server_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column rack_id
+		dataType: string
+		lineageTag: 475715e6-7cd4-4b2d-9ae9-87c1647116a3
+		summarizeBy: none
+		sourceColumn: rack_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_readings
+		dataType: int64
+		formatString: 0
+		lineageTag: 7ec96aa1-b7bf-45a6-a038-576299495051
+		summarizeBy: none
+		sourceColumn: total_readings
+
+		annotation SummarizationSetBy = Automatic
+
+	column healthy_readings
+		dataType: int64
+		formatString: 0
+		lineageTag: f4042d06-bf55-42e4-8494-fdf1652dc2e8
+		summarizeBy: none
+		sourceColumn: healthy_readings
+
+		annotation SummarizationSetBy = Automatic
+
+	column anomaly_incidents
+		dataType: int64
+		formatString: 0
+		lineageTag: d7eb0064-31dd-422a-b712-4832c215e38f
+		summarizeBy: none
+		sourceColumn: anomaly_incidents
+
+		annotation SummarizationSetBy = Automatic
+
+	column uptime_pct
+		dataType: double
+		lineageTag: 02aade01-5e9a-47f8-965a-f0ccbb68db39
+		summarizeBy: none
+		sourceColumn: uptime_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_cpu_pct
+		dataType: double
+		lineageTag: 9d084d83-af70-4f47-900f-be4419af4927
+		summarizeBy: none
+		sourceColumn: avg_cpu_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_temp_c
+		dataType: double
+		lineageTag: 7cd0b463-4081-4df4-97ba-6704ab77aa23
+		summarizeBy: none
+		sourceColumn: avg_temp_c
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column max_temp_c
+		dataType: double
+		lineageTag: 754f3e38-c966-42d4-9752-4f15632b05f5
+		summarizeBy: none
+		sourceColumn: max_temp_c
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_pcie_errors
+		dataType: int64
+		formatString: 0
+		lineageTag: fece4d8c-77e9-4bbd-8c18-20d0913d1a76
+		summarizeBy: none
+		sourceColumn: total_pcie_errors
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fleet_server_kpis = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Users\ERNES.000\OneDrive\Datos adjuntos\fleet_server_kpis.csv"), [Delimiter = ",", Columns = 10, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"server_id", type text}, {"rack_id", type text}, {"total_readings", Int64.Type}, {"healthy_readings", Int64.Type}, {"anomaly_incidents", Int64.Type}, {"uptime_pct", type number}, {"avg_cpu_pct", type number}, {"avg_temp_c", type number}, {"max_temp_c", type number}, {"total_pcie_errors", Int64.Type}}, "en-US")
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,9 @@
+relationship 2c316d4e-50d3-4390-8d99-f69fd23bf2f2
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fleet_master_telemetry.recorded_at
+	toColumn: LocalDateTable_ee44704e-2b5b-4555-85c0-adc05dec7b8f.Date
+
+relationship AutoDetected_4a2ead63-5e10-4a58-a368-e97ac1034b9d
+	fromColumn: fleet_master_telemetry.server_id
+	toColumn: fleet_server_kpis.server_id
+

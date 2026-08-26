@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "53e9deccdcfea04c058a",
+  "position": {
+    "x": 347.4549024741458,
+    "y": 76.00575991621939,
+    "z": 3,
+    "height": 149.59863856525723,
+    "width": 310.05524283283148,
+    "tabOrder": 3
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fleet_master_telemetry"
+                    }
+                  },
+                  "Property": "Total Incidentes"
+                }
+              },
+              "queryRef": "fleet_master_telemetry.Total Incidentes",
+              "nativeQueryRef": "Total Incidentes"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fleet_master_telemetry"
+                  }
+                },
+                "Property": "Total Incidentes"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
