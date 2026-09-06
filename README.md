@@ -63,36 +63,50 @@ The architecture handles the lifecycle from low-level hardware simulation to exe
 
 ```text
 server-health-detector/
-├── .gitignore
-├── README.md
-├── requirements.txt
-├── telemetry.db                # Relational SQLite database
-├── config/                     # Configuration and environment setup
+├── .gitignore                      # Git exclusion rules for virtual environments, caches, and DBs
+├── README.md                       # Comprehensive architecture and usage documentation
+├── requirements.txt                # Pinned production and development dependencies
+├── telemetry.db                    # [Git-Ignored] Local SQLite relational database instance
+├── .venv/                          # [Git-Ignored] Python virtual environment binaries & packages
+├── config/                         # Pipeline thresholds and environment configurations
 ├── docs/
-│   └── assets/                 # Project documentation screenshots
-├── data/
-│   ├── datalake/               # Partitioned raw telemetry (year=YYYY/month=MM/day=DD)
-│   └── processed/              # Analytical export datasets
+│   └── assets/                     # Architecture previews and documentation media
+│       ├── dashboard_overview.png  # NOC Power BI interface overview screenshot
+│       └── fastapi_docs.png        # Interactive Swagger UI endpoint screenshot
+├── data/                           # [Git-Ignored] Raw and transformed data storage
+│   ├── datalake/                   # Daily partitioned streaming telemetry (year=YYYY/month=MM/day=DD)
+│   │   └── year=2026/month=08/day=24/
+│   │       └── telemetry_batch_20260824_232803.json
+│   └── processed/                  # Analytical batch exports for business intelligence
 │       ├── fleet_master_telemetry.csv
 │       └── fleet_server_kpis.csv
-├── dashboard/                  # Power BI Project artifacts (.pbip)
-│   ├── fleet_health_dashboard.pbip
-│   ├── fleet_health_dashboard.Report/
-│   └── fleet_health_dashboard.SemanticModel/
+├── server-health-detector/         # Power BI Project (PBIP) Git-versioned artifacts
+│   ├── .gitignore                  # Power BI desktop local cache exclusion rules
+│   ├── fleet_health_dashboard.pbip # Main entry point for Power BI Desktop
+│   ├── fleet_health_dashboard.Report/         # Visual layouts, themes, and page configurations
+│   └── fleet_health_dashboard.SemanticModel/  # TMDL schemas, data relationships, and DAX measures
 ├── src/
-│   ├── ai/                     # ML model training and serialization
-│   │   ├── intel_health_model.pkl
-│   │   └── train_model.py
-│   ├── api/                    # REST API endpoints and validation schemas
-│   │   ├── main.py
-│   │   └── schemas.py
-│   ├── database/               # Database connection and SQL views
-│   │   ├── analytics_views.py
-│   │   ├── connection.py
-│   │   └── models.py
-│   ├── services/               # Background tasks & data pipelines
-│   │   └── cloud_exporter.py
-│   └── utils/                  # Telemetry generators & simulators
-│       ├── fleet_simulator.py
-│       └── telemetry_generator.py
-└── tests/                      # Unit and integration test suite
+│   ├── ai/                         # Machine learning model pipeline
+│   │   ├── __pycache__/            # [Git-Ignored] Compiled Python bytecode (.pyc)
+│   │   ├── intel_health_model.pkl  # [Git-Ignored] Serialized scikit-learn Isolation Forest model
+│   │   └── train_model.py          # Isolation Forest unsupervised training & serialization
+│   ├── api/                        # REST API routing and inference service
+│   │   ├── __pycache__/            # [Git-Ignored] Compiled Python bytecode (.pyc)
+│   │   ├── main.py                 # FastAPI application, routing, and scoring endpoints
+│   │   └── schemas.py              # Pydantic data contracts and validation models
+│   ├── database/                   # Storage orchestration and relational models
+│   │   ├── __init__.py
+│   │   ├── __pycache__/            # [Git-Ignored] Compiled Python bytecode (.pyc)
+│   │   ├── analytics_views.py      # Analytical SQL aggregation queries and KPI views
+│   │   ├── connection.py           # Database engine setup and session management
+│   │   └── models.py               # SQLAlchemy ORM table definitions
+│   ├── services/                   # Background data processing services
+│   │   ├── __init__.py
+│   │   ├── __pycache__/            # [Git-Ignored] Compiled Python bytecode (.pyc)
+│   │   └── cloud_exporter.py       # Batch data lake export and aggregation service
+│   └── utils/                      # Simulation and mock telemetry generators
+│       ├── __pycache__/            # [Git-Ignored] Compiled Python bytecode (.pyc)
+│       ├── fleet_simulator.py      # Real-time streaming load simulator for API stress testing
+│       └── telemetry_generator.py  # Synthetic telemetry generator injecting hardware degradation
+└── tests/                          # Automated unit and integration test suite
+    └── .pytest_cache/              # [Git-Ignored] Pytest runtime cache and status records
