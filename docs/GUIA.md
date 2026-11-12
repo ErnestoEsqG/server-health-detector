@@ -182,6 +182,18 @@ docker compose up --build
 
 La API queda en http://127.0.0.1:8000/docs y los datos en la carpeta `data/`.
 
+Con Docker también se puede enviar telemetría y generar los archivos de Power BI sin tener Python instalado. En otra terminal, dentro de la carpeta del proyecto:
+
+```bash
+docker compose exec api python -m src.utils.fleet_simulator -n 600 --subtle-rate 0.10 --spread-hours 48 --delay 0
+```
+
+```bash
+docker compose exec api python -m src.database.analytics_views
+```
+
+Los CSV aparecen en `data/processed/`. Para apagar todo: `docker compose down`.
+
 ### 4.4 Enviar telemetría y ver resultados
 
 Con la API corriendo, abre **otra terminal** (con el entorno virtual activado) y ejecuta:
