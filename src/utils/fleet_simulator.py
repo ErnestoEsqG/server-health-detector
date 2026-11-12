@@ -4,6 +4,7 @@ Ejemplos:
     python -m src.utils.fleet_simulator                         # 150 lecturas, 10 % críticas
     python -m src.utils.fleet_simulator --subtle-rate 0.10      # añade degradaciones sutiles
     python -m src.utils.fleet_simulator -n 500 --spread-hours 48 --delay 0
+    python -m src.utils.fleet_simulator -n 20 --scenario subtle_degradation
 """
 import argparse
 import time
@@ -12,7 +13,12 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 import requests
 
-from src.utils.telemetry_generator import CRITICAL_SCENARIOS, SUBTLE_SCENARIOS, sample_readings
+from src.utils.telemetry_generator import (
+    ALL_SCENARIOS,
+    CRITICAL_SCENARIOS,
+    SUBTLE_SCENARIOS,
+    sample_readings,
+)
 
 DEFAULT_API_URL = "http://127.0.0.1:8000"
 SERVER_RACKS = {
@@ -23,7 +29,8 @@ SERVER_RACKS = {
     "SRV-XEON-05": "RACK-ZAP-02",
 }
 SERVERS = list(SERVER_RACKS)
-ICONS = {"NORMAL": "🟢 NORMAL", "ANOMALY_DETECTED": "🔴 ANOMALIA"}
+# Solo ASCII: la consola de Windows no siempre puede imprimir emojis.
+LABELS = {"NORMAL": "[ OK ] NORMAL  ", "ANOMALY_DETECTED": "[ALERTA] ANOMALIA"}
 
 
 def generate_server_reading(server_id: str, scenario: str = "normal", rng: np.random.Generator = None) -> dict:
@@ -57,6 +64,7 @@ def run_simulation(
     delay: float = 0.04,
     spread_hours: float = 0.0,
     seed: int = None,
+    scenario: str = None,
 ) -> dict:
     """Envía `total_requests` lecturas y devuelve el conteo por escenario y por diagnóstico."""
     rng = np.random.default_rng(seed)
@@ -69,8 +77,8 @@ def run_simulation(
     with requests.Session() as session:
         for i in range(total_requests):
             server = str(rng.choice(SERVERS))
-            scenario = pick_scenario(rng, failure_rate, subtle_rate)
-            payload = generate_server_reading(server, scenario, rng)
+            current = scenario or pick_scenario(rng, failure_rate, subtle_rate)
+            payload = generate_server_reading(server, current, rng)
             if spread_hours:
                 # Reparte las mediciones en el tiempo para que el tablero muestre una tendencia.
                 payload["recorded_at"] = (start + step * i).isoformat()
@@ -83,7 +91,7 @@ def run_simulation(
                 break
 
             summary["sent"] += 1
-            counts = summary["by_scenario"].setdefault(scenario, {"sent": 0, "flagged": 0})
+            counts = summary["by_scenario"].setdefault(current, {"sent": 0, "flagged": 0})
             counts["sent"] += 1
             if res.status_code != 200:
                 print(f"[{i + 1:04d}/{total_requests}] Error {res.status_code}: {res.text}")
@@ -92,14 +100,14 @@ def run_simulation(
             data = res.json()
             summary["ok"] += 1
             counts["flagged"] += data["status"] != "NORMAL"
-            print(f"[{i + 1:04d}/{total_requests}] {server} {scenario:<22} -> "
-                  f"{ICONS.get(data['status'], data['status'])} (score: {data['anomaly_score']:.4f})")
+            print(f"[{i + 1:04d}/{total_requests}] {server} {current:<22} -> "
+                  f"{LABELS.get(data['status'], data['status'])} (score: {data['anomaly_score']:.4f})")
             if delay:
                 time.sleep(delay)
 
     print(f"[Simulator] {summary['ok']}/{total_requests} lecturas procesadas y guardadas en SQL.")
-    for scenario, counts in sorted(summary["by_scenario"].items()):
-        print(f"  {scenario:<22} enviadas: {counts['sent']:>4}  marcadas como anomalía: {counts['flagged']:>4}")
+    for name, counts in sorted(summary["by_scenario"].items()):
+        print(f"  {name:<22} enviadas: {counts['sent']:>4}  marcadas como anomalía: {counts['flagged']:>4}")
     return summary
 
 
@@ -112,10 +120,12 @@ def main() -> None:
     parser.add_argument("--delay", type=float, default=0.04, help="pausa entre envíos, en segundos")
     parser.add_argument("--spread-hours", type=float, default=0.0,
                         help="reparte las marcas de tiempo en las últimas N horas")
+    parser.add_argument("--scenario", choices=ALL_SCENARIOS, default=None,
+                        help="envía únicamente lecturas de este escenario (para demostraciones)")
     parser.add_argument("--seed", type=int, default=None, help="semilla para repetir la simulación")
     args = parser.parse_args()
     run_simulation(args.requests, args.url, args.failure_rate, args.subtle_rate,
-                   args.delay, args.spread_hours, args.seed)
+                   args.delay, args.spread_hours, args.seed, args.scenario)
 
 
 if __name__ == "__main__":

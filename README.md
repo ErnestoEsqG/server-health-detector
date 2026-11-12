@@ -58,6 +58,13 @@ The architecture handles the lifecycle from low-level hardware simulation to exe
 
 ---
 
+## 📖 Guía en español
+
+* [`docs/GUIA.md`](docs/GUIA.md): explicación del proyecto, instalación paso a paso, escenarios de demostración y de implementación.
+* [`docs/GUION_EXPO.md`](docs/GUION_EXPO.md): guion de exposición y preguntas frecuentes.
+
+---
+
 ## 🚀 Quickstart
 
 Requires Python 3.11 (the pinned scientific stack does not install on 3.12+).
