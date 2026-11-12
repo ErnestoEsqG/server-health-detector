@@ -1,63 +1,122 @@
+"""Simulador de flota: envía lecturas a la API como lo haría un agente de telemetría.
+
+Ejemplos:
+    python -m src.utils.fleet_simulator                         # 150 lecturas, 10 % críticas
+    python -m src.utils.fleet_simulator --subtle-rate 0.10      # añade degradaciones sutiles
+    python -m src.utils.fleet_simulator -n 500 --spread-hours 48 --delay 0
+"""
+import argparse
 import time
-import requests
+from datetime import datetime, timedelta, timezone
+
 import numpy as np
+import requests
 
-API_URL = "http://127.0.0.1:8000/api/v1/telemetry/ingest"
-SERVERS = ["SRV-XEON-01", "SRV-XEON-02", "SRV-XEON-03", "SRV-XEON-04", "SRV-XEON-05"]
+from src.utils.telemetry_generator import CRITICAL_SCENARIOS, SUBTLE_SCENARIOS, sample_readings
 
-def generate_server_reading(server_id: str, inject_failure: bool = False):
-    """
-    Genera una lectura de telemetria simulando operacion normal 
-    o un incidente critico de hardware.
-    """
-    if inject_failure:
-        return {
-            "server_id": server_id,
-            "cpu_utilization_pct": float(np.round(np.random.uniform(92.0, 99.9), 2)),
-            "package_temp_c": float(np.round(np.random.uniform(89.0, 101.5), 2)),
-            "dram_usage_gb": float(np.round(np.random.uniform(110.0, 126.0), 2)),
-            "pcie_error_count": int(np.random.randint(5, 20))
-        }
+DEFAULT_API_URL = "http://127.0.0.1:8000"
+SERVER_RACKS = {
+    "SRV-XEON-01": "RACK-ZAP-01",
+    "SRV-XEON-02": "RACK-ZAP-01",
+    "SRV-XEON-03": "RACK-ZAP-01",
+    "SRV-XEON-04": "RACK-ZAP-02",
+    "SRV-XEON-05": "RACK-ZAP-02",
+}
+SERVERS = list(SERVER_RACKS)
+ICONS = {"NORMAL": "🟢 NORMAL", "ANOMALY_DETECTED": "🔴 ANOMALIA"}
+
+
+def generate_server_reading(server_id: str, scenario: str = "normal", rng: np.random.Generator = None) -> dict:
+    """Genera el payload de una lectura para el escenario indicado."""
+    rng = rng or np.random.default_rng()
+    row = sample_readings(scenario, 1, rng).iloc[0]
     return {
         "server_id": server_id,
-        "cpu_utilization_pct": float(np.round(np.random.normal(45.0, 10.0), 2)),
-        "package_temp_c": float(np.round(np.random.normal(54.0, 5.0), 2)),
-        "dram_usage_gb": float(np.round(np.random.normal(32.0, 4.0), 2)),
-        "pcie_error_count": int(np.random.poisson(0.02))
+        "rack_id": SERVER_RACKS.get(server_id),
+        "cpu_utilization_pct": float(row["cpu_utilization_pct"]),
+        "package_temp_c": float(row["package_temp_c"]),
+        "dram_usage_gb": float(row["dram_usage_gb"]),
+        "pcie_error_count": int(row["pcie_error_count"]),
     }
 
-def run_simulation(total_requests: int = 150):
-    print(f"==================================================")
-    print(f"[Simulator] Iniciando envio de {total_requests} lecturas de flota a la API...")
-    print(f"==================================================")
-    successful = 0
 
-    for i in range(total_requests):
-        srv = str(np.random.choice(SERVERS))
-        # 10% de probabilidad de inyectar falla
-        is_failing = bool(np.random.rand() < 0.10)
-        payload = generate_server_reading(srv, inject_failure=is_failing)
+def pick_scenario(rng: np.random.Generator, failure_rate: float, subtle_rate: float) -> str:
+    draw = rng.random()
+    if draw < failure_rate:
+        return str(rng.choice(CRITICAL_SCENARIOS))
+    if draw < failure_rate + subtle_rate:
+        return str(rng.choice(SUBTLE_SCENARIOS))
+    return "normal"
 
-        try:
-            res = requests.post(API_URL, json=payload, timeout=2.0)
-            if res.status_code == 200:
-                data = res.json()
-                status_icon = "🟢 NORMAL" if data['status'] == "NORMAL" else "🔴 ANOMALIA"
-                print(f"[{i+1:03d}/{total_requests}] {srv} -> {status_icon} (Score: {data['anomaly_score']:.4f})")
-                successful += 1
-            else:
-                print(f"[{i+1:03d}/{total_requests}] Error {res.status_code}: {res.text}")
-        except Exception as e:
-            print(f"Error critico de conexion con la API: {e}")
-            print("Asegurate de que Uvicorn este corriendo en http://127.0.0.1:8000")
-            break
 
-        time.sleep(0.04) # 40 ms de pausa entre envios
+def run_simulation(
+    total_requests: int = 150,
+    api_url: str = DEFAULT_API_URL,
+    failure_rate: float = 0.10,
+    subtle_rate: float = 0.0,
+    delay: float = 0.04,
+    spread_hours: float = 0.0,
+    seed: int = None,
+) -> dict:
+    """Envía `total_requests` lecturas y devuelve el conteo por escenario y por diagnóstico."""
+    rng = np.random.default_rng(seed)
+    endpoint = f"{api_url.rstrip('/')}/api/v1/telemetry/ingest"
+    start = datetime.now(timezone.utc) - timedelta(hours=spread_hours)
+    step = timedelta(hours=spread_hours) / max(total_requests, 1)
+    summary = {"sent": 0, "ok": 0, "by_scenario": {}}
 
-    print(f"==================================================")
-    print(f"[Simulator] Simulacion finalizada exitosamente.")
-    print(f"[Simulator] {successful}/{total_requests} lecturas procesadas y persistidas en SQL.")
-    print(f"==================================================")
+    print(f"[Simulator] Enviando {total_requests} lecturas a {endpoint}")
+    with requests.Session() as session:
+        for i in range(total_requests):
+            server = str(rng.choice(SERVERS))
+            scenario = pick_scenario(rng, failure_rate, subtle_rate)
+            payload = generate_server_reading(server, scenario, rng)
+            if spread_hours:
+                # Reparte las mediciones en el tiempo para que el tablero muestre una tendencia.
+                payload["recorded_at"] = (start + step * i).isoformat()
+
+            try:
+                res = session.post(endpoint, json=payload, timeout=5.0)
+            except requests.RequestException as exc:
+                print(f"[Simulator] Sin conexión con la API: {exc}")
+                print(f"[Simulator] Verifica que Uvicorn esté corriendo en {api_url}")
+                break
+
+            summary["sent"] += 1
+            counts = summary["by_scenario"].setdefault(scenario, {"sent": 0, "flagged": 0})
+            counts["sent"] += 1
+            if res.status_code != 200:
+                print(f"[{i + 1:04d}/{total_requests}] Error {res.status_code}: {res.text}")
+                continue
+
+            data = res.json()
+            summary["ok"] += 1
+            counts["flagged"] += data["status"] != "NORMAL"
+            print(f"[{i + 1:04d}/{total_requests}] {server} {scenario:<22} -> "
+                  f"{ICONS.get(data['status'], data['status'])} (score: {data['anomaly_score']:.4f})")
+            if delay:
+                time.sleep(delay)
+
+    print(f"[Simulator] {summary['ok']}/{total_requests} lecturas procesadas y guardadas en SQL.")
+    for scenario, counts in sorted(summary["by_scenario"].items()):
+        print(f"  {scenario:<22} enviadas: {counts['sent']:>4}  marcadas como anomalía: {counts['flagged']:>4}")
+    return summary
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Simulador de telemetría de flota")
+    parser.add_argument("-n", "--requests", type=int, default=150, help="lecturas a enviar")
+    parser.add_argument("--url", default=DEFAULT_API_URL, help="URL base de la API")
+    parser.add_argument("--failure-rate", type=float, default=0.10, help="proporción de fallas críticas")
+    parser.add_argument("--subtle-rate", type=float, default=0.0, help="proporción de degradaciones sutiles")
+    parser.add_argument("--delay", type=float, default=0.04, help="pausa entre envíos, en segundos")
+    parser.add_argument("--spread-hours", type=float, default=0.0,
+                        help="reparte las marcas de tiempo en las últimas N horas")
+    parser.add_argument("--seed", type=int, default=None, help="semilla para repetir la simulación")
+    args = parser.parse_args()
+    run_simulation(args.requests, args.url, args.failure_rate, args.subtle_rate,
+                   args.delay, args.spread_hours, args.seed)
+
 
 if __name__ == "__main__":
-    run_simulation(150)
+    main()

@@ -1,0 +1,8 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # La base, el modelo y los CSV para Power BI quedan en ./data del host.
+      - ./data:/app/data

@@ -1,0 +1,11 @@
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+data
+docs
+tests
+server-health-detector
+*.db
+*.pkl

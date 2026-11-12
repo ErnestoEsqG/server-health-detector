@@ -1,31 +1,40 @@
-import os
 import json
-from datetime import datetime
-from typing import List, Dict, Any
+import os
+from typing import Any, Dict
+
 from sqlalchemy.orm import Session
-from src.database.models import TelemetryRecord
+
+from src import config
+from src.database.models import ExportCheckpoint, TelemetryRecord, utcnow
+
 
 class CloudDataLakeExporter:
+    """Exporta lotes de telemetría desde SQL a un data lake particionado por fecha.
+
+    El destino es el sistema de archivos local, con el mismo esquema de
+    particiones (year=/month=/day=) que usaría un almacenamiento de objetos,
+    de modo que migrar a S3 o Azure Blob solo requiere cambiar la escritura.
     """
-    Servicio encargado de empaquetar lotes de telemetria desde SQL
-    y sincronizarlos hacia el Data Lake (Local o AWS S3 / Azure Blob).
-    """
-    def __init__(self, base_export_dir: str = "data/datalake", bucket_name: str = "intel-telemetry-datalake"):
+
+    def __init__(self, base_export_dir: str = config.DATALAKE_DIR):
         self.base_export_dir = base_export_dir
-        self.bucket_name = bucket_name
 
     def export_batch_from_db(self, db: Session, limit: int = 100) -> Dict[str, Any]:
-        """
-        Extrae los registros mas recientes de la base de datos SQL y los guarda
-        en la estructura particionada del Data Lake.
-        """
-        records = db.query(TelemetryRecord).order_by(TelemetryRecord.recorded_at.desc()).limit(limit).all()
+        """Exporta hasta `limit` registros que todavía no se han enviado al data lake."""
+        checkpoint = db.get(ExportCheckpoint, 1)
+        last_id = checkpoint.last_record_id if checkpoint else 0
 
+        records = (
+            db.query(TelemetryRecord)
+            .filter(TelemetryRecord.id > last_id)
+            .order_by(TelemetryRecord.id)
+            .limit(limit)
+            .all()
+        )
         if not records:
-            return {"status": "SKIPPED", "message": "No hay registros disponibles para exportar."}
+            return {"status": "SKIPPED", "message": "No hay registros nuevos para exportar."}
 
-        # Convertir modelos SQLAlchemy a diccionarios
-        data_payload = [
+        payload = [
             {
                 "id": r.id,
                 "server_id": r.server_id,
@@ -36,32 +45,35 @@ class CloudDataLakeExporter:
                 "status": r.status,
                 "is_healthy": r.is_healthy,
                 "anomaly_score": r.anomaly_score,
-                "recorded_at": r.recorded_at.isoformat()
+                "recorded_at": r.recorded_at.isoformat(),
             }
             for r in records
         ]
 
-        # Particionamiento temporal estándar en Data Lakes: year=YYYY/month=MM/day=DD
-        now = datetime.utcnow()
-        partition_path = os.path.join(
-            self.base_export_dir,
-            f"year={now.year}",
-            f"month={now.month:02d}",
-            f"day={now.day:02d}"
-        )
+        now = utcnow()
+        partition = f"year={now.year}/month={now.month:02d}/day={now.day:02d}"
+        partition_path = os.path.join(self.base_export_dir, *partition.split("/"))
         os.makedirs(partition_path, exist_ok=True)
+        file_path = os.path.join(
+            partition_path, f"telemetry_batch_{now.strftime('%Y%m%d_%H%M%S_%f')}.json"
+        )
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
 
-        filename = f"telemetry_batch_{now.strftime('%Y%m%d_%H%M%S')}.json"
-        full_file_path = os.path.join(partition_path, filename)
-
-        with open(full_file_path, "w", encoding="utf-8") as f:
-            json.dump(data_payload, f, indent=2)
+        # El checkpoint avanza solo después de escribir el archivo.
+        if checkpoint is None:
+            checkpoint = ExportCheckpoint(id=1)
+            db.add(checkpoint)
+        checkpoint.last_record_id = records[-1].id
+        db.commit()
 
         return {
             "status": "SUCCESS",
-            "exported_records": len(data_payload),
-            "target_bucket": self.bucket_name,
-            "lake_partition": f"year={now.year}/month={now.month:02d}/day={now.day:02d}",
-            "file_path": full_file_path,
-            "exported_at": now.isoformat()
+            "exported_records": len(payload),
+            "first_record_id": records[0].id,
+            "last_record_id": records[-1].id,
+            "storage_backend": "local",
+            "lake_partition": partition,
+            "file_path": file_path,
+            "exported_at": now.isoformat(),
         }

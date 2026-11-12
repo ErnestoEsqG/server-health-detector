@@ -1,0 +1,26 @@
+{
+  "endpoint": "http://127.0.0.1:8000/api/v1/telemetry/ingest",
+  "requests": 1000,
+  "errors": 0,
+  "under_100ms_pct": 100.0,
+  "client_latency_ms": {
+    "mean": 9.67,
+    "p50": 9.49,
+    "p95": 11.66,
+    "p99": 13.31,
+    "max": 32.17
+  },
+  "server_latency_ms": {
+    "mean": 8.23,
+    "p50": 8.05,
+    "p95": 10.17,
+    "p99": 11.48,
+    "max": 30.71
+  },
+  "environment": {
+    "python": "3.11.18",
+    "machine": "x86_64",
+    "system": "Linux",
+    "cpu_count": 4
+  }
+}
